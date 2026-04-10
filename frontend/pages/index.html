@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Gym Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Gym Manager</h2>
+        <ul>
+            <li class="active"><a href="index.html">Dashboard</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="classes.html">Classes & Bookings</a></li>
+            <li><a href="payments.html">Payments</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header>
+            <h1>Dashboard</h1>
+            <p>Overview of gym statistics and operations</p>
+        </header>
+
+        <div class="dashboard-cards" id="dashboard-stats">
+            <div class="card">
+                <h3>Total Members</h3>
+                <p id="total-members">Loading...</p>
+            </div>
+            <div class="card">
+                <h3>Upcoming Classes</h3>
+                <p id="total-classes">Loading...</p>
+            </div>
+            <div class="card">
+                <h3>Total Revenue (All Time)</h3>
+                <p id="total-revenue">Loading...</p>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h2>Recent Payments Overview</h2>
+            <br>
+            <table id="payments-table">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Method</th>
+                        <th>Transactions</th>
+                        <th>Revenue Generated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Fetch dashboard data
+        const API_URL = 'http://localhost:3000/api';
+
+        async function initDashboard() {
+            try {
+                // Fetch members count
+                const memRes = await fetch(`${API_URL}/members`);
+                const members = await memRes.json();
+                document.getElementById('total-members').innerText = members.length;
+
+                // Fetch classes count
+                const classRes = await fetch(`${API_URL}/classes`);
+                const classes = await classRes.json();
+                document.getElementById('total-classes').innerText = classes.length;
+
+                // Fetch payments
+                const payRes = await fetch(`${API_URL}/payments`);
+                const payments = await payRes.json();
+                
+                let grandTotal = 0;
+                const tbody = document.querySelector('#payments-table tbody');
+                tbody.innerHTML = '';
+
+                payments.forEach(p => {
+                    grandTotal += parseFloat(p.total_revenue);
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${p.month}</td>
+                            <td>${p.method}</td>
+                            <td>${p.total_transactions}</td>
+                            <td>$${parseFloat(p.total_revenue).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById('total-revenue').innerText = `$${grandTotal.toFixed(2)}`;
+
+            } catch (err) {
+                console.error("Dashboard fetch error:", err);
+            }
+        }
+
+        window.onload = initDashboard;
+    </script>
+</body>
+</html>

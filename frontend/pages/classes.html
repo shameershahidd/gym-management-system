@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classes - Gym Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Gym Manager</h2>
+        <ul>
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li class="active"><a href="classes.html">Classes & Bookings</a></li>
+            <li><a href="payments.html">Payments</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header>
+            <h1>Class Schedule</h1>
+            <p>View upcoming classes and book members.</p>
+        </header>
+
+        <div class="table-container">
+            <table id="classes-table">
+                <thead>
+                    <tr>
+                        <th>Class Name</th>
+                        <th>Trainer</th>
+                        <th>Schedule</th>
+                        <th>Duration</th>
+                        <th>Room</th>
+                        <th>Capacity</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="class-tbody">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeBookingModal()">&times;</span>
+            <h2>Book Class</h2>
+            <br>
+            <p><strong>Class: </strong><span id="booking-class-name"></span></p>
+            <p><strong>Trainer: </strong><span id="booking-class-trainer"></span></p>
+            <br>
+            <form id="booking-form">
+                <input type="hidden" id="book_class_id">
+                
+                <div class="form-group">
+                    <label for="book_member_id">Select Member to Book</label>
+                    <select id="book_member_id" required>
+                        <option value="">Loading members...</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Class API Integration -->
+    <script src="../js/classes.js"></script>
+</body>
+</html>

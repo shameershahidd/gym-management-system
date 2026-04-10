@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments - Gym Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Gym Manager</h2>
+        <ul>
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="members.html">Members</a></li>
+            <li><a href="classes.html">Classes & Bookings</a></li>
+            <li class="active"><a href="payments.html">Payments</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header>
+            <h1>Revenue & Payments</h1>
+            <p>View aggregated database revenue reports.</p>
+        </header>
+
+        <div class="table-container">
+            <h2>Revenue by Month & Method</h2>
+            <br>
+            <table id="full-payments-table">
+                <thead>
+                    <tr>
+                        <th>Month (YYYY-MM)</th>
+                        <th>Payment Method</th>
+                        <th>Total Transactions</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody id="payment-tbody">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../js/payments.js"></script>
+</body>
+</html>

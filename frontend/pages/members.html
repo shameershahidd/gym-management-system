@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Members - Gym Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Gym Manager</h2>
+        <ul>
+            <li><a href="index.html">Dashboard</a></li>
+            <li class="active"><a href="members.html">Members</a></li>
+            <li><a href="classes.html">Classes & Bookings</a></li>
+            <li><a href="payments.html">Payments</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header>
+            <h1>Manage Members</h1>
+            <p>View, add, update, and manage gym members.</p>
+        </header>
+
+        <div class="table-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <input type="text" id="search-input" placeholder="Search members by name or email..." style="width: 300px; padding: 10px;">
+                <button class="btn btn-primary" onclick="openMemberModal()">+ Add New Member</button>
+            </div>
+
+            <table id="members-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Join Date</th>
+                        <th>Membership Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="member-tbody">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add/Edit Member Modal -->
+    <div id="memberModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeMemberModal()">&times;</span>
+            <h2 id="modal-title">Add New Member</h2>
+            <form id="member-form">
+                <input type="hidden" id="member_id">
+                
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" id="first_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" id="last_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="text" id="phone" required pattern="[0-9\-]+">
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Member</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Member API Integration -->
+    <script src="../js/members.js"></script>
+</body>
+</html>
