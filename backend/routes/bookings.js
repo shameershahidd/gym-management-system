@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const { protect, restrictTo } = require('../middleware/auth');
 
 // @route   POST /api/bookings
 // @desc    6. Book a class (INSERT + capacity check via stored procedure)
-router.post('/', async (req, res) => {
+router.post('/', protect, restrictTo('admin', 'staff'), async (req, res) => {
     try {
         const { member_id, class_id } = req.body;
         

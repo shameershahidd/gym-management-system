@@ -78,12 +78,22 @@
                     <input type="text" id="phone" required pattern="[0-9\-]+">
                 </div>
 
+                <div class="form-group">
+                    <label for="membership_type">Membership Type</label>
+                    <select id="membership_type" required>
+                        <option value="Basic">Basic ($30/mo)</option>
+                        <option value="Premium">Premium ($50/mo)</option>
+                        <option value="VIP">VIP ($100/mo)</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn btn-primary">Save Member</button>
             </form>
         </div>
     </div>
 
     <!-- Member API Integration -->
+    <script src="../js/authUtils.js"></script>
     <script src="../js/members.js"></script>
 </body>
 </html>

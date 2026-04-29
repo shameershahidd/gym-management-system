@@ -7,10 +7,16 @@ document.addEventListener('DOMContentLoaded', fetchMembers);
 
 async function fetchMembers() {
     try {
-        const res = await fetch(`${API_URL}/members`);
+        const res = await checkAuthAndFetch(`${API_URL}/members`);
+        if (res.status === 401) return; // handled by authUtils
         const members = await res.json();
         globalMembers = members;
         renderMembersTable(members);
+        
+        // Hide entire Add Member button if viewing as a 'viewer'
+        if (getUserRole() === 'viewer') {
+            document.querySelector('.btn-primary').style.display = 'none';
+        }
     } catch (err) {
         console.error('Error fetching members:', err);
     }
@@ -20,9 +26,23 @@ function renderMembersTable(members) {
     const tbody = document.getElementById('member-tbody');
     tbody.innerHTML = '';
     
+    // Hide actions column entirely for viewers
+    const isViewer = getUserRole() === 'viewer';
+    const isAdmin = getUserRole() === 'admin';
+    
     members.forEach(member => {
         let date = new Date(member.join_date).toLocaleDateString();
         let name = `${member.first_name} ${member.last_name}`;
+        
+        let actionsHtml = '';
+        if (!isViewer) {
+            actionsHtml = `<button class="btn btn-secondary" onclick="editMember(${member.member_id})">Edit</button>`;
+            if (isAdmin) {
+                actionsHtml += ` <button class="btn btn-danger" onclick="deleteMember(${member.member_id})">Delete</button>`;
+            }
+        } else {
+            actionsHtml = `<em>Read-Only</em>`;
+        }
         
         tbody.innerHTML += `
             <tr>
@@ -32,10 +52,7 @@ function renderMembersTable(members) {
                 <td>${member.phone}</td>
                 <td>${date}</td>
                 <td>${member.membership_type || 'No Membership'}</td>
-                <td>
-                    <button class="btn btn-secondary" onclick="editMember(${member.member_id})">Edit</button>
-                    <button class="btn btn-danger" onclick="deleteMember(${member.member_id})">Delete</button>
-                </td>
+                <td>${actionsHtml}</td>
             </tr>
         `;
     });
@@ -57,6 +74,20 @@ function closeMemberModal() {
 document.getElementById('member-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    // Front-end Regex Extra Credit
+    const phoneInput = document.getElementById('phone').value;
+    if (phoneInput.length < 7) {
+        alert("Validation error: Phone number must be at least 7 characters.");
+        return;
+    }
+    
+    const emailInput = document.getElementById('email').value;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(emailInput)) {
+        alert("Validation error: Invalid email format.");
+        return;
+    }
+    
     const id = document.getElementById('member_id').value;
     const method = id ? 'PUT' : 'POST';
     const url = id ? `${API_URL}/members/${id}` : `${API_URL}/members`;
@@ -64,13 +95,14 @@ document.getElementById('member-form').addEventListener('submit', async (e) => {
     const data = {
         first_name: document.getElementById('first_name').value,
         last_name: document.getElementById('last_name').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
+        email: emailInput,
+        phone: phoneInput,
+        membership_type: document.getElementById('membership_type').value,
         join_date: new Date().toISOString().split('T')[0] // For new members
     };
 
     try {
-        const res = await fetch(url, {
+        const res = await checkAuthAndFetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -80,7 +112,8 @@ document.getElementById('member-form').addEventListener('submit', async (e) => {
             closeMemberModal();
             fetchMembers(); // Refresh
         } else {
-            alert('Failed to save member. Make sure email is unique.');
+            const errBody = await res.json();
+            alert(`Failed: ${errBody.message || 'Check database constraints.'}`);
         }
     } catch (err) {
         console.error('Error:', err);
@@ -98,6 +131,11 @@ function editMember(id) {
     document.getElementById('last_name').value = member.last_name;
     document.getElementById('email').value = member.email;
     document.getElementById('phone').value = member.phone;
+    if (member.membership_type) {
+        document.getElementById('membership_type').value = member.membership_type;
+    } else {
+        document.getElementById('membership_type').value = "Basic";
+    }
     
     document.getElementById('memberModal').style.display = 'block';
 }
@@ -107,9 +145,12 @@ async function deleteMember(id) {
     if (!confirm('Are you sure you want to delete this member? All their bookings and memberships will be deleted and this cannot be undone.')) return;
 
     try {
-        const res = await fetch(`${API_URL}/members/${id}`, { method: 'DELETE' });
+        const res = await checkAuthAndFetch(`${API_URL}/members/${id}`, { method: 'DELETE' });
         if (res.ok) {
             fetchMembers(); // Refresh List
+        } else {
+            const errInfo = await res.json();
+            alert(`Error: ${errInfo.message}`);
         }
     } catch (err) {
         console.error('Delete error:', err);

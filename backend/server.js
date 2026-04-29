@@ -6,6 +6,7 @@ const membersRoutes = require('./routes/members');
 const classesRoutes = require('./routes/classes');
 const bookingsRoutes = require('./routes/bookings');
 const paymentsRoutes = require('./routes/payments');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // Main App Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/members', membersRoutes);
 app.use('/api/classes', classesRoutes);
 app.use('/api/bookings', bookingsRoutes);

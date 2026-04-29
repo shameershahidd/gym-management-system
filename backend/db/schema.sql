@@ -8,6 +8,16 @@ DROP TABLE IF EXISTS Membership;
 DROP TABLE IF EXISTS Class;
 DROP TABLE IF EXISTS Trainer;
 DROP TABLE IF EXISTS Member;
+DROP TABLE IF EXISTS SystemUser;
+
+-- 0. System User Table (Authentication & Roles)
+CREATE TABLE SystemUser (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'staff', 'viewer') NOT NULL DEFAULT 'viewer',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
 -- 1. Member Table
 CREATE TABLE Member (

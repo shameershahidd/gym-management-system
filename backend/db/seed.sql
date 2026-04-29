@@ -8,7 +8,15 @@ TRUNCATE TABLE Membership;
 TRUNCATE TABLE Class;
 TRUNCATE TABLE Trainer;
 TRUNCATE TABLE Member;
+TRUNCATE TABLE SystemUser;
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- 0. Insert Default Users (Password for all is 'password123')
+-- The passwords here are hashed using bcrypt
+INSERT INTO SystemUser (username, password_hash, role) VALUES
+('admin', '$2b$10$7YN71gE6p3pIeMuImyKIPeaq4ax95BLiU4nEbkn3LRmuXEognafGW', 'admin'),
+('staff1', '$2b$10$7YN71gE6p3pIeMuImyKIPeaq4ax95BLiU4nEbkn3LRmuXEognafGW', 'staff'),
+('viewer1', '$2b$10$7YN71gE6p3pIeMuImyKIPeaq4ax95BLiU4nEbkn3LRmuXEognafGW', 'viewer');
 
 -- 1. Insert Members (10 rows)
 INSERT INTO Member (first_name, last_name, email, phone, join_date) VALUES

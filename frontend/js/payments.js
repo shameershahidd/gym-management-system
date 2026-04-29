@@ -3,8 +3,15 @@ const API_URL = 'http://localhost:3000/api';
 document.addEventListener('DOMContentLoaded', fetchPayments);
 
 async function fetchPayments() {
+    if (getUserRole() === 'viewer') {
+        const tbody = document.getElementById('payment-tbody');
+        tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">RESTRICTED: Viewers cannot access financial data.</td></tr>`;
+        return;
+    }
+
     try {
-        const res = await fetch(`${API_URL}/payments`);
+        const res = await checkAuthAndFetch(`${API_URL}/payments`);
+        if (res.status === 401) return;
         const payments = await res.json();
         renderPaymentsTable(payments);
     } catch (err) {

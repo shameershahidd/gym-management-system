@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const { protect, restrictTo } = require('../middleware/auth');
 
 // @route   GET /api/members
 // @desc    1. List all members with their membership type (SELECT + JOIN)
-router.get('/', async (req, res) => {
+router.get('/', protect, async (req, res) => {
     try {
         const query = `
             SELECT m.member_id, m.first_name, m.last_name, m.email, m.phone, m.join_date, 
@@ -23,16 +24,45 @@ router.get('/', async (req, res) => {
 
 // @route   POST /api/members
 // @desc    2. Register a new member (INSERT)
-router.post('/', async (req, res) => {
+router.post('/', protect, restrictTo('admin', 'staff'), async (req, res) => {
     try {
-        const { first_name, last_name, email, phone, join_date } = req.body;
+        const { first_name, last_name, email, phone, join_date, membership_type } = req.body;
+        
+        // Use a transaction since we are inserting into two tables
+        await db.query('START TRANSACTION');
+        
         const query = `
             INSERT INTO Member (first_name, last_name, email, phone, join_date)
             VALUES (?, ?, ?, ?, ?)
         `;
-        const [result] = await db.query(query, [first_name, last_name, email, phone, join_date || new Date()]);
-        res.status(201).json({ id: result.insertId, message: 'Member created successfully' });
+        const dateToUse = join_date || new Date();
+        const [result] = await db.query(query, [first_name, last_name, email, phone, dateToUse]);
+        const newMemberId = result.insertId;
+
+        // Insert membership tier if provided
+        if (membership_type) {
+            let fee = 30.00;
+            if (membership_type === 'Premium') fee = 50.00;
+            if (membership_type === 'VIP') fee = 100.00;
+            
+            // Default 1 month from join_date
+            const startDateStr = typeof dateToUse === 'string' ? dateToUse : dateToUse.toISOString().split('T')[0];
+            const startDate = new Date(startDateStr);
+            const endDate = new Date(startDate);
+            endDate.setMonth(endDate.getMonth() + 1);
+
+            const membershipQuery = `
+                INSERT INTO Membership (member_id, type, start_date, end_date, fee)
+                VALUES (?, ?, ?, ?, ?)
+            `;
+            await db.query(membershipQuery, [newMemberId, membership_type, startDateStr, endDate.toISOString().split('T')[0], fee]);
+        }
+
+        await db.query('COMMIT');
+        
+        res.status(201).json({ id: newMemberId, message: 'Member created successfully' });
     } catch (err) {
+        await db.query('ROLLBACK');
         console.error(err);
         res.status(500).json({ error: 'Server error' });
     }
@@ -40,18 +70,47 @@ router.post('/', async (req, res) => {
 
 // @route   PUT /api/members/:id
 // @desc    3. Update member contact info (UPDATE)
-router.put('/:id', async (req, res) => {
+router.put('/:id', protect, restrictTo('admin', 'staff'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { first_name, last_name, email, phone } = req.body;
+        const { first_name, last_name, email, phone, membership_type } = req.body;
+        
+        await db.query('START TRANSACTION');
+        
         const query = `
             UPDATE Member 
             SET first_name = ?, last_name = ?, email = ?, phone = ? 
             WHERE member_id = ?
         `;
         await db.query(query, [first_name, last_name, email, phone, id]);
+        
+        // Update or insert membership
+        if (membership_type) {
+            let fee = 30.00;
+            if (membership_type === 'Premium') fee = 50.00;
+            if (membership_type === 'VIP') fee = 100.00;
+            
+            const checkQuery = `SELECT * FROM Membership WHERE member_id = ?`;
+            const [existing] = await db.query(checkQuery, [id]);
+            
+            if (existing.length > 0) {
+                await db.query(`UPDATE Membership SET type = ?, fee = ? WHERE member_id = ?`, [membership_type, fee, id]);
+            } else {
+                const start = new Date();
+                const end = new Date();
+                end.setMonth(end.getMonth() + 1);
+                
+                await db.query(`
+                    INSERT INTO Membership (member_id, type, start_date, end_date, fee)
+                    VALUES (?, ?, ?, ?, ?)
+                `, [id, membership_type, start.toISOString().split('T')[0], end.toISOString().split('T')[0], fee]);
+            }
+        }
+        
+        await db.query('COMMIT');
         res.json({ message: 'Member updated successfully' });
     } catch (err) {
+        await db.query('ROLLBACK');
         console.error(err);
         res.status(500).json({ error: 'Server error' });
     }
@@ -59,7 +118,7 @@ router.put('/:id', async (req, res) => {
 
 // @route   DELETE /api/members/:id
 // @desc    4. Remove a member (DELETE)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect, restrictTo('admin'), async (req, res) => {
     try {
         const { id } = req.params;
         const query = `DELETE FROM Member WHERE member_id = ?`;
@@ -73,7 +132,7 @@ router.delete('/:id', async (req, res) => {
 
 // @route   GET /api/members/:id/bookings
 // @desc    8. All bookings for a specific member (SELECT + multi-table JOIN)
-router.get('/:id/bookings', async (req, res) => {
+router.get('/:id/bookings', protect, restrictTo('admin', 'staff'), async (req, res) => {
     try {
         const { id } = req.params;
         const query = `

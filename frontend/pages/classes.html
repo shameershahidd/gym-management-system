@@ -69,7 +69,33 @@
         </div>
     </div>
 
+    <!-- Attendees Modal -->
+    <div id="attendeesModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close-btn" onclick="closeAttendeesModal()">&times;</span>
+            <h2>Class Attendees</h2>
+            <p style="margin-bottom: 20px;"><strong>Class: </strong><span id="attendees-class-name"></span></p>
+            
+            <div class="table-container">
+                <table style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Member ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendees-tbody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- Class API Integration -->
+    <script src="../js/authUtils.js"></script>
     <script src="../js/classes.js"></script>
 </body>
 </html>

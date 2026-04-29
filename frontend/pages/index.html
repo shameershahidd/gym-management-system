@@ -59,24 +59,33 @@
         </div>
     </div>
 
+    <script src="../js/authUtils.js"></script>
     <script>
         // Fetch dashboard data
         const API_URL = 'http://localhost:3000/api';
 
         async function initDashboard() {
             try {
-                // Fetch members count
-                const memRes = await fetch(`${API_URL}/members`);
+                // Fetch members count (using authenticated fetch)
+                const memRes = await checkAuthAndFetch(`${API_URL}/members`);
+                if (memRes.status === 401) return logout(); // handle token expiration
                 const members = await memRes.json();
                 document.getElementById('total-members').innerText = members.length;
 
                 // Fetch classes count
-                const classRes = await fetch(`${API_URL}/classes`);
+                const classRes = await checkAuthAndFetch(`${API_URL}/classes`);
                 const classes = await classRes.json();
                 document.getElementById('total-classes').innerText = classes.length;
 
+                // Restrict Admin/Staff logic only
+                if (getUserRole() === 'viewer') {
+                    document.getElementById('total-revenue').innerText = "RESTRICTED VIEW";
+                    document.querySelector('#payments-table').innerHTML = "<tbody><tr><td>(Viewer Accounts cannot access financial data)</td></tr></tbody>";
+                    return; // exit early, viewers can't hit payments
+                }
+
                 // Fetch payments
-                const payRes = await fetch(`${API_URL}/payments`);
+                const payRes = await checkAuthAndFetch(`${API_URL}/payments`);
                 const payments = await payRes.json();
                 
                 let grandTotal = 0;

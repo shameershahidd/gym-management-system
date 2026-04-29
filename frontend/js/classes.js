@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchClasses() {
     try {
-        const res = await fetch(`${API_URL}/classes`);
+        const res = await checkAuthAndFetch(`${API_URL}/classes`);
+        if (res.status === 401) return;
         const classes = await res.json();
         globalClasses = classes;
         renderClassesTable(classes);
@@ -20,10 +21,15 @@ async function fetchClasses() {
 }
 
 async function fetchMembersForDropdown() {
+    // Only fetch if admin or staff, viewers can't book
+    if (getUserRole() === 'viewer') return; 
+
     try {
-        const res = await fetch(`${API_URL}/members`);
-        const members = await res.json();
-        allMembers = members;
+        const res = await checkAuthAndFetch(`${API_URL}/members`);
+        if (res.ok) {
+            const members = await res.json();
+            allMembers = members;
+        }
     } catch (err) {
         console.error('Error fetching members:', err);
     }
@@ -36,6 +42,16 @@ function renderClassesTable(classes) {
     classes.forEach(c => {
         let date = new Date(c.schedule).toLocaleString();
         
+        let actionBtn = '';
+        if (getUserRole() !== 'viewer') {
+            actionBtn = `
+                <button class="btn btn-primary" onclick="openBookingModal(${c.class_id})">Book Now</button>
+                <button class="btn btn-secondary" onclick="viewAttendees(${c.class_id}, '${c.class_name}')" style="margin-left: 5px;">Attendees</button>
+            `;
+        } else {
+            actionBtn = `<em style="color:#7f8c8d;">Read-Only</em>`;
+        }
+
         tbody.innerHTML += `
             <tr>
                 <td><strong>${c.class_name}</strong></td>
@@ -44,9 +60,7 @@ function renderClassesTable(classes) {
                 <td>${c.duration_min} min</td>
                 <td>${c.room}</td>
                 <td>Up to ${c.capacity}</td>
-                <td>
-                    <button class="btn btn-primary" onclick="openBookingModal(${c.class_id})">Book Now</button>
-                </td>
+                <td>${actionBtn}</td>
             </tr>
         `;
     });
@@ -74,6 +88,46 @@ function closeBookingModal() {
     document.getElementById('bookingModal').style.display = 'none';
 }
 
+async function viewAttendees(classId, className) {
+    document.getElementById('attendees-class-name').innerText = className;
+    const tbody = document.getElementById('attendees-tbody');
+    tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+    
+    document.getElementById('attendeesModal').style.display = 'block';
+
+    try {
+        const res = await checkAuthAndFetch(`${API_URL}/classes/${classId}/bookings`);
+        if (res.ok) {
+            const attendees = await res.json();
+            tbody.innerHTML = '';
+            
+            if (attendees.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No members booked yet.</td></tr>';
+                return;
+            }
+
+            attendees.forEach(a => {
+                let statusColor = a.status === 'Confirmed' ? 'green' : 'orange';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>#${a.member_id}</td>
+                        <td>${a.first_name} ${a.last_name}</td>
+                        <td>${a.email}</td>
+                        <td style="color: ${statusColor}; font-weight: bold;">${a.status}</td>
+                    </tr>
+                `;
+            });
+        }
+    } catch (err) {
+        console.error('Error fetching attendees:', err);
+        tbody.innerHTML = '<tr><td colspan="4" style="color: red;">Error loading attendees.</td></tr>';
+    }
+}
+
+function closeAttendeesModal() {
+    document.getElementById('attendeesModal').style.display = 'none';
+}
+
 // Handle Form Submission (Calls the Stored Procedure route!)
 document.getElementById('booking-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -84,7 +138,7 @@ document.getElementById('booking-form').addEventListener('submit', async (e) => 
     };
 
     try {
-        const res = await fetch(`${API_URL}/bookings`, {
+        const res = await checkAuthAndFetch(`${API_URL}/bookings`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -93,11 +147,10 @@ document.getElementById('booking-form').addEventListener('submit', async (e) => 
         const resultInfo = await res.json();
         
         if (res.ok) {
-            // "message" comes directly from MySQL Stored Procedure output
             alert(resultInfo.message); 
             closeBookingModal();
         } else {
-            alert('Failed to book class.');
+            alert(`Failed: ${resultInfo.message || 'Server error'}`);
         }
     } catch (err) {
         console.error('Error:', err);
