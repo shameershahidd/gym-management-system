@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 
-// In reality, this should be in .env. We use a fallback so it works locally by default
+
 const { JWT_SECRET } = require('../middleware/auth');
 
 router.post('/register', async (req, res) => {

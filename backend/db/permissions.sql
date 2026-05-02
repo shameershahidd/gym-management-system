@@ -27,10 +27,7 @@ FROM Payment
 GROUP BY method, payment_month;
 
 
--- -----------------------------------------------------
--- 2. Create Roles / Users in MySQL Server 
---    (These map to the roles in the SystemUser table)
--- -----------------------------------------------------
+-- 2. Create Roles / Users in MySQL Server (These map to the roles in the SystemUser table)
 
 -- Drop users if they already exist
 DROP USER IF EXISTS 'gym_admin'@'localhost';
@@ -43,9 +40,7 @@ CREATE USER 'gym_staff'@'localhost' IDENTIFIED BY 'staffPass123';
 CREATE USER 'gym_viewer'@'localhost' IDENTIFIED BY 'viewerPass123';
 
 
--- -----------------------------------------------------
 -- 3. Assign Privileges per role (GRANT)
--- -----------------------------------------------------
 
 -- Admins get full control over the database
 GRANT ALL PRIVILEGES ON gym_management.* TO 'gym_admin'@'localhost';

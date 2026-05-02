@@ -21,9 +21,6 @@ app.use('/api/classes', classesRoutes);
 app.use('/api/bookings', bookingsRoutes);
 app.use('/api/payments', paymentsRoutes);
 
-// Optional future routes
-// app.use('/api/trainers', require('./routes/trainers'));
-// app.use('/api/memberships', require('./routes/memberships'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

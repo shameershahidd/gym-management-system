@@ -26,8 +26,7 @@ function protect(req, res, next) {
 }
 
 /**
- * Middleware to restrict access entirely to certain roles.
- * Must be used AFTER protect() pipeline.
+ 
  * @param req.user from JWT
  * @param expectedRoles array of allowed roles
  */
