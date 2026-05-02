@@ -3,8 +3,6 @@ const router = express.Router();
 const db = require('../config/db');
 const { protect, restrictTo } = require('../middleware/auth');
 
-// @route   GET /api/members
-// @desc    1. List all members with their membership type (SELECT + JOIN)
 router.get('/', protect, async (req, res) => {
     try {
         const query = `
@@ -22,8 +20,6 @@ router.get('/', protect, async (req, res) => {
     }
 });
 
-// @route   POST /api/members
-// @desc    2. Register a new member (INSERT)
 router.post('/', protect, restrictTo('admin', 'staff'), async (req, res) => {
     try {
         const { first_name, last_name, email, phone, join_date, membership_type } = req.body;
@@ -68,8 +64,6 @@ router.post('/', protect, restrictTo('admin', 'staff'), async (req, res) => {
     }
 });
 
-// @route   PUT /api/members/:id
-// @desc    3. Update member contact info (UPDATE)
 router.put('/:id', protect, restrictTo('admin', 'staff'), async (req, res) => {
     try {
         const { id } = req.params;
@@ -116,8 +110,6 @@ router.put('/:id', protect, restrictTo('admin', 'staff'), async (req, res) => {
     }
 });
 
-// @route   DELETE /api/members/:id
-// @desc    4. Remove a member (DELETE)
 router.delete('/:id', protect, restrictTo('admin'), async (req, res) => {
     try {
         const { id } = req.params;
@@ -130,8 +122,6 @@ router.delete('/:id', protect, restrictTo('admin'), async (req, res) => {
     }
 });
 
-// @route   GET /api/members/:id/bookings
-// @desc    8. All bookings for a specific member (SELECT + multi-table JOIN)
 router.get('/:id/bookings', protect, restrictTo('admin', 'staff'), async (req, res) => {
     try {
         const { id } = req.params;

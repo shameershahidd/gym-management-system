@@ -7,8 +7,6 @@ const db = require('../config/db');
 // In reality, this should be in .env. We use a fallback so it works locally by default
 const { JWT_SECRET } = require('../middleware/auth');
 
-// @route   POST /api/auth/register
-// @desc    Register a new system user
 router.post('/register', async (req, res) => {
     try {
         const { username, password, role } = req.body;
@@ -17,7 +15,7 @@ router.post('/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Store into SystemUser (Extra Credit for Users table + hashing)
+        // Store into SystemUser
         const query = `
             INSERT INTO SystemUser (username, password_hash, role)
             VALUES (?, ?, ?)
@@ -30,8 +28,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// @route   POST /api/auth/login
-// @desc    Validate login credentials and return signed JWT Token with Role
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;

@@ -1,10 +1,8 @@
--- Extra Credit: MySQL privileges assigned per role & Views
+-- MySQL privileges assigned per role & Views
 
 USE gym_management;
 
--- -----------------------------------------------------
--- 1. Create Views for role-based data exposure
--- -----------------------------------------------------
+
 DROP VIEW IF EXISTS View_PublicClasses;
 DROP VIEW IF EXISTS View_PrivateFinances;
 

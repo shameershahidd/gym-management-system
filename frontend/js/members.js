@@ -74,17 +74,17 @@ function closeMemberModal() {
 document.getElementById('member-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // Front-end Regex Extra Credit
+    // Front-end validation
     const phoneInput = document.getElementById('phone').value;
     if (phoneInput.length < 7) {
-        alert("Validation error: Phone number must be at least 7 characters.");
+        alert("Please enter a valid phone number (at least 7 characters).");
         return;
     }
     
     const emailInput = document.getElementById('email').value;
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(emailInput)) {
-        alert("Validation error: Invalid email format.");
+        alert("Please enter a valid email format.");
         return;
     }
     
@@ -157,7 +157,7 @@ async function deleteMember(id) {
     }
 }
 
-// Search Filter (Extra Credit logic)
+// Search Filter 
 document.getElementById('search-input').addEventListener('keyup', (e) => {
     const term = e.target.value.toLowerCase();
     const filtered = globalMembers.filter(m => {

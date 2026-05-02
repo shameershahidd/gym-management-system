@@ -3,8 +3,6 @@ const router = express.Router();
 const db = require('../config/db');
 const { protect } = require('../middleware/auth');
 
-// @route   GET /api/classes
-// @desc    5. List all classes with trainer names (SELECT + JOIN)
 router.get('/', protect, async (req, res) => {
     try {
         const query = `
@@ -22,8 +20,6 @@ router.get('/', protect, async (req, res) => {
     }
 });
 
-// @route   GET /api/classes/:id/bookings
-// @desc    Get all members booked for a specific class
 router.get('/:id/bookings', protect, async (req, res) => {
     try {
         const { id } = req.params;

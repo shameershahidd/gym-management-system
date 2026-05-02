@@ -3,8 +3,6 @@ const router = express.Router();
 const db = require('../config/db');
 const { protect, restrictTo } = require('../middleware/auth');
 
-// @route   GET /api/payments
-// @desc    7. Total revenue report using SUM/COUNT (SELECT + aggregate)
 router.get('/', protect, restrictTo('admin', 'staff'), async (req, res) => {
     try {
         const query = `
